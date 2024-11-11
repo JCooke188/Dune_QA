@@ -120,7 +120,7 @@ end
 
 clear temp*
 
-%% Time Stuff
+%% Time 
 
 dt = 0.0065*50; %0.0065*100;
 tend = dt*Nt;
@@ -333,6 +333,48 @@ for i = 2:N_u-1
     ylim([0 0.75]);
 end
 
+%% Truncate the plot 
+
+close all;
+
+grabTheseFigs = [1,2,6,10];
+
+for j = 1:length(grabTheseFigs)
+    
+    i = grabTheseFigs(j);
+   
+    nexttile;
+    plot(zdelta_global,q1_c(:,i),'ksquare-','MarkerFaceColor',qColors(1),...
+        'MarkerSize',8,'LineWidth',2); hold on
+    plot(zdelta_global,q2_c(:,i),'k^--','MarkerFaceColor',qColors(2),...
+        'MarkerSize',8,'LineWidth',2); 
+    plot(zdelta_global,q3_c(:,i),'ko:','MarkerFaceColor',qColors(3),...
+        'MarkerSize',8,'LineWidth',2);
+    plot(zdelta_global,q4_c(:,i),'kv-.','MarkerFaceColor',qColors(4),...
+        'MarkerSize',8,'LineWidth',2);
+%     makeATitle = strcat('$\hat{x} = $',num2str(round(x(i)) - 1850),' m'); 
+    if j == 1
+        makeATitle = strcat('Alkali Flat');
+    elseif j == 2
+        makeATitle = strcat('$\hat{x}_1 = $',num2str(round(x(i)) - 1850),' m'); 
+    elseif j == 3
+        makeATitle = strcat('$\hat{x}_5 = $',num2str(round(x(i)) - 1850),' m');
+    else
+        makeATitle = strcat('$\hat{x}_9 = $',num2str(round(x(i)) - 1850),' m'); 
+    end
+    set(gca,'FontName','SansSerif','FontSize',18);
+    title(makeATitle,'Interpreter','Latex','FontSize',24);
+    xlabel('$z/\delta$',...
+        'Interpreter','Latex','FontSize',24,'FontName','SansSerif');
+    ylabel('$S_i$',...
+        'Interpreter','Latex','FontSize',24,'FontName','SansSerif');
+    if j == 1
+        legend('Outward Motions','Ejections','Inward Motions','Sweeps',...
+            'Location','NorthEast');
+    end
+    xlim([0 1]);
+    ylim([0 0.75]);
+end
 
 %% 
 
@@ -382,6 +424,44 @@ for i = 2:1:N_u-1
    xlim([-1 1]);
 end
 
+%% Truncating Scatter Plot Figures
+
+
+figure();
+for j = 1:length(grabTheseFigs)
+    
+    i = grabTheseFigs(j);
+    
+    nexttile;
+    p1 = scatter(up{i}(:,5),wp{i}(:,5),'^','MarkerEdgeColor','#2436db'); hold on
+    p2 = scatter(up{i}(:,8),wp{i}(:,8),'square','MarkerEdgeColor','#fa007f');
+    p3 = scatter(up{i}(:,23),wp{i}(:,23),'o','MarkerEdgeColor','#ff9a00');
+    l1 = xline(0);
+    l2 = yline(0);
+    set(gca,'FontName','SansSerif','FontSize',18);
+    xlabel('$u^\prime [m/s]$','Interpreter','Latex','FontName','SansSerif',...
+       'FontSize',24);
+    ylabel('$w^\prime [m/s]$','Interpreter','Latex','FontName','SansSerif',...
+       'FontSize',24);
+    grid on;
+    
+    %    myTitle = strcat('$\hat{x} = $',num2str(round(x(i))-1850),' m');
+    if j == 1
+        makeATitle = strcat('Alkali Flat');
+        legend([p1,p2,p3],'z/\delta = 0.06','z/\delta = 0.1',...
+            'z/\delta = 0.3','Location','NorthEast');
+    elseif j == 2
+        makeATitle = strcat('$\hat{x}_1 = $',num2str(round(x(i)) - 1850),' m'); 
+    elseif j == 3
+        makeATitle = strcat('$\hat{x}_5 = $',num2str(round(x(i)) - 1850),' m');
+    else
+        makeATitle = strcat('$\hat{x}_9 = $',num2str(round(x(i)) - 1850),' m'); 
+    end
+    title(makeATitle,'Interpreter','Latex','FontName','SansSerif',...
+       'FontSize',24);
+    ylim([-1 1]);
+    xlim([-1 1]);
+end
 
 
 %% Partitioning quadrant events over the time 
@@ -595,6 +675,7 @@ for i = 1:N_u
         thisB = XB{1,i}{1,j}(:,end);
         
         BmAdt = (thisB - thisA).*dt;
+        storeBmAdt{i}{j} = BmAdt;
         BmAdtm = mean(BmAdt);
         
         if j == 1
@@ -616,6 +697,26 @@ for i = 1:N_u
 end
 
 T_Qmat = cell2mat(T_Q');
+
+%% For statistical sig. testing
+
+tcrit_1tail = 1.646;
+
+for i = 1:N_u-1
+    
+    for j = 1:4
+        
+        time_std{i}(j) = std(storeBmAdt{i}{j});
+        time_mean{i}(j) = mean(storeBmAdt{i}{j});
+        
+        t_stat{i}(j) = (time_mean{i}(j) - time_mean{1}(j)) ...
+            / sqrt( ((time_std{i}(j)^2)/length(storeBmAdt{i}(j))) ...
+            + ((time_std{1}(j)^2)/length(storeBmAdt{1}(j))) );
+    
+    end
+    
+end
+
 
 %% Now need some figures to share the results
 
@@ -838,6 +939,7 @@ for i = 1:N_u
             thisB = ZXB{1,i}{1,k}{1,j}(:,end);
 
             BmAdt = (thisB - thisA).*dt;
+            storeAll_BmAdt{i}{k}{j} = BmAdt;
             BmAdtm = mean(BmAdt);
 
             if j == 1
@@ -859,12 +961,69 @@ for i = 1:N_u
     
 end
 
+%% Statistical Significance testing 
+
+% We perform a two-tail t-test comparing the means of the time-durations
+% within the dune field against that at the Alkali Flat. The point is to
+% see if the IBL increases the average time-duration of an event compared
+% to the same elevation outside of the IBL.
+
+clear time_std time_mean t_stat h_time
+
+for i = 1:N_u-1
+    
+    for k = 1:Nz
+        for j = 1:4
+
+
+           h_time{i}{k}(j) = ttest2(storeAll_BmAdt{i}{k}{j},...
+               storeAll_BmAdt{1}{k}{j},'Vartype','unequal',"Tail","right");
+
+            
+        end
+    end
+end
+
+%% Now, isolating the results for the z elevations of interest
+
+% h = 1 means we REJECT the null hypothesis (that the two means are equal, 
+% so the means are statistically different (larger than the one in the 
+% Alkali Flat in this case) to our 95% confidence level
+
+% 5 = zdelta 0.05
+% 8 = zdelta 0.1
+% 23 = zdelta 0.3
+
+
+clear hz_*
+
+for i = 1:N_u-1
+    hz_001{i} = h_time{i}{1}(:);
+    hz_006{i} = h_time{i}{5}(:);
+    hz_010{i} = h_time{i}{8}(:);
+    hz_030{i} = h_time{i}{23}(:);
+end
+
+% h for z = 0.01 shows that there is no increase in the mean time-duration
+% very close to the wall inside of the IBL
+
+% h for z = 0.06 shows that beginning at the second station, there is a
+% statistically significant difference for the 2nd and 4th quadrants, and
+% then by the next station this is the case for all quadrants
+
+% h for z = 0.10 shows that this is also the case (as for z = 0.06), but 
+% for all quadrants
+
+% h for z = 0.30 shows that there is a stastically significant difference
+% by the fifth downstream station.
+
+
 %% Want to determine 'Impulse' for all Z now
 
 % Will need to do some type of integration between each event 
 
 clear thisUWProd thisBounds boundLength Aqk Bqk temp intOver myInt AvgInt ...
-    ZJq ZXJq
+    ZJq ZXJq storeMyInt
 
 for i = 1:N_u 
    
@@ -883,12 +1042,11 @@ for i = 1:N_u
                     Aqk = Nt-1;
                 end
                 temp = thisUWProd(Aqk:Bqk);
-    %             if Aqk == 1
-    %                 Aqk = 0;
-    %             end
                 intOver = linspace(dt*Aqk,dt*Bqk,length(temp));
                 myInt(k) = trapz(intOver,temp);
+                
            end
+           storeMyInt{i}{kk}{j} = myInt;
            AvgInt(j) = mean(myInt);
            clear myInt
         end
@@ -901,8 +1059,63 @@ for i = 1:N_u
     
 end
 
-%% Clean up data
+%% Statistical Significance testing for impulse
 
+% We perform a two-tail t-test comparing the means of the event impulses
+% within the dune field against that at the Alkali Flat. The point is to
+% see if the IBL increases the average impulse of an event compared to the
+% same elevation outside of the IBL.
+
+clear time_std time_mean t_stat h_time
+
+for i = 1:N_u-1
+    
+    for k = 1:Nz
+        for j = 1:4
+
+           h_impulse{i}{k}(j) = ttest2(storeMyInt{i}{k}{j},...
+               storeMyInt{1}{k}{j},'Vartype','unequal',"Tail","right");
+
+        end
+            
+    end
+end
+
+%% Now, isolating the results for the z elevations of interest
+
+% h = 1 means we REJECT the null hypothesis (that the two means are equal, 
+% so the means are statistically different (larger than the one in the 
+% Alkali Flat in this case) to our 95% confidence level
+
+% 5 = zdelta 0.05
+% 8 = zdelta 0.1
+% 23 = zdelta 0.3
+
+
+clear hz_impulse*
+
+for i = 1:N_u-1
+    imp_hz_001{i} = h_impulse{i}{1}(:);
+    imp_hz_006{i} = h_impulse{i}{5}(:);
+    imp_hz_010{i} = h_impulse{i}{8}(:);
+    imp_hz_030{i} = h_impulse{i}{23}(:);
+end
+
+% h for z = 0.01 shows that there is an increase in the mean event impulse
+% very close to the wall inside of the IBL, perhaps this is more a
+% reflection of the roughness than the IBL though
+
+% h for z = 0.06 might also reflect a difference due to the roughness, as
+% at the fourth station, the dunes are at their highest peak and this is
+% when we begin to see a stastical significance across all quadrants 
+
+% h for z = 0.10 shows that further from the wall (perhaps outside of the
+% roughness sublayer), the influence of the IBL is more important 
+
+% h for z = 0.30 shows the same as z = 0.10.
+
+
+%% Clean up data
 
 
 for i = 1:N_u
@@ -934,6 +1147,29 @@ end
 
 clear thisUWProd thisBounds boundLength Aqk Bqk temp AvgInt myInt intOver
 clear myLegend* mystep myZ myZ2 i1 i2 i3 i4 frac_q* A temp* test* this*
+
+%% Finding z/delta locations of peak values of TQ and JQ
+
+for i = 2:N_u-1
+    
+    thisJq2Max = max(ZXJq2{i});
+    thisTq2Max = max(ZXTq2{i});
+    thisJq4Max = max(ZXJq4{i});
+    thisTq4Max = max(ZXTq4{i});
+    
+    i_jq2 = find(ZXJq2{i} == thisJq2Max);
+    i_tq2 = find(ZXTq2{i} == thisTq2Max);
+    i_jq4 = find(ZXJq4{i} == thisJq4Max);
+    i_tq4 = find(ZXTq4{i} == thisTq4Max);
+    
+    zdel_jq2(i) = z_global(i_jq2)./(delta_ibl(i));
+    zdel_tq2(i) = z_global(i_tq2)./(delta_ibl(i));
+    zdel_jq4(i) = z_global(i_jq4)./(delta_ibl(i));
+    zdel_tq4(i) = z_global(i_tq4)./(delta_ibl(i));
+
+end
+
+%% Now donig 
 
 %% Creating Dual Bar Charts of Tq and Jq at z = 0.01, 0.06, 0.1, and 0.3
 
@@ -1258,9 +1494,9 @@ figure();
 for i = 1:length(delta_ibl)
    
      plot(z_global,ZXTq2{i},'-','Color',...
-            myColors(i),'LineWidth',2); hold on
+            iblColors(i),'LineWidth',2); hold on
     plot(z_global,ZXTq4{i},'--','Color',...
-            myColors(i),'LineWidth',2); hold on
+            iblColors(i),'LineWidth',2); hold on
     grid on;
     ylabel('$T^*_q(z)$','Interpreter','Latex','FontName','SansSerif');
     ax1 = gca;
