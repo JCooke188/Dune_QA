@@ -1148,28 +1148,7 @@ end
 clear thisUWProd thisBounds boundLength Aqk Bqk temp AvgInt myInt intOver
 clear myLegend* mystep myZ myZ2 i1 i2 i3 i4 frac_q* A temp* test* this*
 
-%% Finding z/delta locations of peak values of TQ and JQ
 
-for i = 2:N_u-1
-    
-    thisJq2Max = max(ZXJq2{i});
-    thisTq2Max = max(ZXTq2{i});
-    thisJq4Max = max(ZXJq4{i});
-    thisTq4Max = max(ZXTq4{i});
-    
-    i_jq2 = find(ZXJq2{i} == thisJq2Max);
-    i_tq2 = find(ZXTq2{i} == thisTq2Max);
-    i_jq4 = find(ZXJq4{i} == thisJq4Max);
-    i_tq4 = find(ZXTq4{i} == thisTq4Max);
-    
-    zdel_jq2(i) = z_global(i_jq2)./(delta_ibl(i));
-    zdel_tq2(i) = z_global(i_tq2)./(delta_ibl(i));
-    zdel_jq4(i) = z_global(i_jq4)./(delta_ibl(i));
-    zdel_tq4(i) = z_global(i_tq4)./(delta_ibl(i));
-
-end
-
-%% Now donig 
 
 %% Creating Dual Bar Charts of Tq and Jq at z = 0.01, 0.06, 0.1, and 0.3
 
