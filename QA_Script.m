@@ -1450,6 +1450,12 @@ close all;
 iblColors = ["#000000", "#daf8e3", "#97ebdb", "#00c2c7", "#0086ad", "#005582", ...
     "#ffc100", "#ff9a00", "#ff7400", "#bf0000" ];
 
+delCorr = 0.29.*(x(2:end-1)-1850).^0.72;
+delCorr(1) = 30;
+delCorr(2) = 30;
+
+delCorr = [30, delCorr];
+
 figure();
 for i = 1:length(delta_ibl)
    
@@ -1457,6 +1463,11 @@ for i = 1:length(delta_ibl)
             iblColors(i),'LineWidth',2); hold on
     plot(z_global./(delta_ibl(i)),ZXTq4{i},'--','Color',...
             iblColors(i),'LineWidth',2); hold on
+        
+%     plot(z_global./(delCorr(i)),ZXTq2{i},'-','Color',...
+%             iblColors(i),'LineWidth',2); hold on
+%     plot(z_global./(delCorr(i)),ZXTq4{i},'--','Color',...
+%             iblColors(i),'LineWidth',2); hold on
     grid on;
     ylabel('$T^*_q(z)$','Interpreter','Latex','FontName','SansSerif');
     ax1 = gca;
@@ -1487,6 +1498,8 @@ for i = 1:length(delta_ibl)
     xlim([0,400]);
     
 end
+
+
 
 
 %% Data about the dunes at the center plane

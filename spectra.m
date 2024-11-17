@@ -246,7 +246,55 @@ ylabel('$E(\omega)$','FontName','SansSerif','FontSize',14);
 title('Alkali Flat','FontName','SansSerif','FontSize',18);
 
 
+%% Truncated Plot
 
+% close all;
+
+tiledlayout(2,2);
+nexttile;
+for i = 1:4
+loglog(omega((end/2):end-myCutoff{1}(i)),...
+    smoothdata(E_hat_w{1,i}((end/2):end-myCutoff{1}(i))),...
+    'Color',newColors(i),'LineWidth',2); hold on;
+
+end
+set(gca,'FontName','SansSerif','FontSize',18);
+xline(omega_asl,'LineWidth',1.5);
+xlabel('$\omega$','FontName','SansSerif','FontSize',24);
+ylabel('$E(\omega)$','FontName','SansSerif','FontSize',24);
+title('Alkali Flat','FontName','SansSerif','FontSize',18);
+legend('z/\delta = 0.01','z/\delta = 0.06','z/\delta = 0.10',...
+            'z/\delta = 0.30','\omega_i = U_i/\delta_i',...
+            'Location','SouthWest');
+xlim([10^(-3) 10^1]);
+ylim([10^(-6) 3*10^0]);
+
+grabTheseFigs = [2,6,10];        
+        
+for j = 1:length(grabTheseFigs)
+nexttile;
+    k = grabTheseFigs(j);
+    for i = 1:NzSelect-1
+        loglog(omega((end/2):end-myCutoff{k}(i)),...
+            smoothdata(E_hat_w{k,i}((end/2):end-myCutoff{k}(i))),...
+            'Color',newColors(i),'LineWidth',2); hold on;
+        set(gca,'FontName','SansSerif','FontSize',14);
+        xlabel('$\omega$','FontName','SansSerif','FontSize',20);
+        ylabel('$E(\omega)$','FontName','SansSerif','FontSize',20);
+    end
+    set(gca,'FontName','SansSerif','FontSize',18);
+    xline(omega_ibl(k),'LineWidth',1.5);
+    if j == 1
+        makeATitle = strcat('$\hat{x}_1 = $',num2str(round(x(k)) - 1850),' m'); 
+    elseif j == 2
+        makeATitle = strcat('$\hat{x}_5 = $',num2str(round(x(k)) - 1850),' m');
+    else
+        makeATitle = strcat('$\hat{x}_9 = $',num2str(round(x(k)) - 1850),' m'); 
+    end
+    title(makeATitle,'Interpreter','Latex','FontSize',18);
+    xlim([10^(-3) 10^1]);
+    ylim([10^(-6) 3*10^0]);
+end
 
 
 %% End
