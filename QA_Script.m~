@@ -1547,6 +1547,9 @@ mean_zibl = [mean(zibl_maxT2) mean(zibl_maxT4) mean(zibl_maxJ2) ...
 
 
 
+
+
+
 %% Data about the dunes at the center plane
 
 % binned data by km 
