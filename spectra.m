@@ -122,7 +122,7 @@ total_T = T(end);
 zselection = [1,5,8,23,38];
 NzSelect = length(zselection);
 
-for i = 1:Nx
+for i = 1:N_u
     for j = 1:NzSelect
     
       up_temp = up{i}(:,zselection(j));
@@ -144,7 +144,7 @@ clear urms_temp psi_w
 kmax = [4.189,2.0944,1.0472,0.5236,0.2618];
 gridSize = [0.75,1.50,3.0,6.0];
 
-for i = 1:Nx
+for i = 1:N_u
     for j = 1:NzSelect
         Ubar_infty{i}(j) = U{i}(zselection(j));
         w_cutoff{i}(j) = Ubar_infty{i}(j)*kmax(j)/(2*pi());
@@ -169,7 +169,7 @@ set(0,'defaultTextInterpreter','latex');
 for j = 1:NzSelect-1
 figure(j);
     aTitle = strcat ('$z = $',num2str(zselection(j))); 
-    for i = 1:Nx
+    for i = 1:N_u
         nexttile;
         loglog(omega((end/2):end-myCutoff{i}(j)),...
             smoothdata(E_hat_w{i,j}((end/2):end-myCutoff{i}(j)))); hold on;
@@ -210,7 +210,7 @@ newColors = ["#2a4858","#2436db","#fa007f","#ff9a00"];
 
 
 
-for j = 2:Nx-1
+for j = 2:N_u-1
  figure(j);
 %nexttile;
 for i = 1:NzSelect-1
