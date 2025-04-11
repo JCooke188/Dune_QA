@@ -297,4 +297,51 @@ nexttile;
 end
 
 
+%% Plotting at each x every z
+% Goal is to see at what x/delta does the magnitude begin to overlap
+
+% First, calculate the spectrum
+for i = 1:N_u
+    for j = 1:Nz
+    
+      up_temp = up{i}(:,j);
+
+      allz_u_hat_w = (1/Nt) * fftshift(fft(up_temp));
+      psi_w = abs(allz_u_hat_w).^2;
+      allz_E_hat_w{i,j} = psi_w ./ (dw);
+         
+    % Pre-multiplied Energy Spectra
+      allz_E_w{i,j} = allz_E_hat_w{i,j}.*omega';
+    end 
+      
+end
+
+clear urms_temp psi_w 
+
+%% IBL Height from correlation
+
+xhat = x(2:end) - 1850;
+dibl_corr = 0.29.*(xhat).^(0.71);
+dibl_corr(1:2) = 30;
+
+
+%% Now plot at each x 
+
+close all;
+
+for i = 1:N_u-1
+
+    figure(i)
+    for j = 1:Nz
+        if z_global(j) <= dibl_corr(i)
+            loglog(omega(end/2:end),smoothdata(allz_E_hat_w{i+1,j}(end/2:end)),...
+                'r-',"LineWidth",1); hold on
+        elseif z_global(j) >= dibl_corr(i)
+            loglog(omega(end/2:end),smoothdata(allz_E_hat_w{i+1,j}(end/2:end)),...
+                'b-',"LineWidth",1); hold on
+        end
+    end
+
+end
+
 %% End
