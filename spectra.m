@@ -329,19 +329,32 @@ dibl_corr(1:2) = 30;
 
 close all;
 
+
 for i = 1:N_u-1
+    
+    red_count  = 0;
+    blue_count = 0;
 
     figure(i)
     for j = 1:Nz
         if z_global(j) <= dibl_corr(i)
+            red_count = red_count + 1;
             loglog(omega(end/2:end),smoothdata(allz_E_hat_w{i+1,j}(end/2:end)),...
                 'r-',"LineWidth",1); hold on
         elseif z_global(j) >= dibl_corr(i)
+            blue_count = blue_count + 1;
             loglog(omega(end/2:end),smoothdata(allz_E_hat_w{i+1,j}(end/2:end)),...
                 'b-',"LineWidth",1); hold on
         end
+
+        
     end
 
+    store_red(i) = red_count;
+    store_blue(i) = blue_count;
+
 end
+
+
 
 %% End
