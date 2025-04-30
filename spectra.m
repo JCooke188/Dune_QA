@@ -325,25 +325,93 @@ dibl_corr = 0.29.*(xhat).^(0.71);
 dibl_corr(1:2) = 30;
 
 
+%% Clean up the data with frequency cutoff
+
+% 1 = zdelta 0.01 = 3m 
+% 5 = zdelta 0.05 = 15m
+% 8 = zdelta 0.1 = 30m 
+% 23 = zdelta 0.3 = 90m
+% 38 = zdelta 0.5 = 150m
+
+
+all_kmax = [4.189,2.0944,1.0472,0.5236,0.2618,0.1309];
+nlayer = [8,8,16,16,8,8];
+grid_space = [0.75,1.5,3.0,6.0,12.0,24.0];
+height_range = cumsum(nlayer.*grid_space);
+
+ihr = zeros(numel(height_range),1);
+
+for i = 1:numel(height_range)-1
+    ihr(i) = find(z_global >= height_range(i),1);
+end
+
+
+w_cutoff_allz = cell(N_u,1);
+allzCutoff = cell(N_u,1);
+
+for i = 1:N_u
+    for j = 1:Nz
+        thisUBar = U{i}(j);
+        if j < ihr(1)
+            w_cutoff_allz{i}(j) = thisUBar*all_kmax(1)/(2*pi());
+        elseif j >= ihr(1) && j < ihr(2)
+            w_cutoff_allz{i}(j) = thisUBar*all_kmax(2)/(2*pi());
+        elseif j >= ihr(2) && j < ihr(3)
+            w_cutoff_allz{i}(j) = thisUBar*all_kmax(3)/(2*pi());
+        elseif j >= ihr(3) && j < ihr(4)
+            w_cutoff_allz{i}(j) = thisUBar*all_kmax(4)/(2*pi());
+        elseif j >= ihr(4) && j < ihr(5)
+            w_cutoff_allz{i}(j) = thisUBar*all_kmax(5)/(2*pi());
+        else
+            w_cutoff_allz{i}(j) = thisUBar*all_kmax(6)/(2*pi());
+        end
+
+
+        ii = find(abs(omega) <= w_cutoff_allz{i}(j),1);
+        allzCutoff{i}(j) = ii;
+        
+    end
+end
+
+clean_ehatw = cell(N_u,Nz);
+clean_omega = cell(N_u,Nz);
+
+for i = 1:N_u
+    for j = 1:Nz
+
+        
+        this_freq = allz_E_hat_w{i,j}((end/2):end-allzCutoff{i}(j));
+        this_omega = omega(end/2:end-allzCutoff{i}(j));
+        
+        clean_ehatw{i,j} = this_freq;
+        clean_omega{i,j} = this_omega;
+
+    end
+end
+
+
 %% Now plot at each x 
 
 close all;
 
-
+figure('units','pixels','position',[0 0 1600 600]);
+tiledlayout(2,5)
+sgtitle('Frequency Spectrum at all $\hat{x}$ and $z$','fontsize',20,...
+    'interpreter','latex');
 for i = 1:N_u-1
     
     red_count  = 0;
     blue_count = 0;
 
-    figure(i)
+    nexttile;
     for j = 1:Nz
         if z_global(j) <= dibl_corr(i)
             red_count = red_count + 1;
-            loglog(omega(end/2:end),smoothdata(allz_E_hat_w{i+1,j}(end/2:end)),...
+            loglog(clean_omega{i+1,j},smoothdata(clean_ehatw{i+1,j}),...
                 'r-',"LineWidth",1); hold on
         elseif z_global(j) >= dibl_corr(i)
             blue_count = blue_count + 1;
-            loglog(omega(end/2:end),smoothdata(allz_E_hat_w{i+1,j}(end/2:end)),...
+            loglog(clean_omega{i+1,j},smoothdata(clean_ehatw{i+1,j}),...
                 'b-',"LineWidth",1); hold on
         end
 
@@ -352,6 +420,14 @@ for i = 1:N_u-1
 
     store_red(i) = red_count;
     store_blue(i) = blue_count;
+
+    set(gca,'FontName','SansSerif','FontSize',14);
+    thisTitle = strcat('$\hat{x} = $',{' '},num2str(xhat(i)),{' '},'m');
+    title(thisTitle);
+    xlabel('$\omega$','FontName','SansSerif','FontSize',20);
+    ylabel('$E(\omega)$','FontName','SansSerif','FontSize',20);
+    xlim([10^(-3) 10^1]);
+    ylim([10^(-6) 3*10^0]);
 
 end
 
